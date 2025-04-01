@@ -1,4 +1,4 @@
-# GraphWalk Analysis
+# Graph Walk Analysis
 
 This project provides tools for analyzing walks on undirected graphs using SymPy, 
 NumPy, NetworkX, and Matplotlib. It includes functionalities to:
@@ -9,6 +9,7 @@ NumPy, NetworkX, and Matplotlib. It includes functionalities to:
 - Compute the characteristic polynomial of the adjacency matrix.
 - Perform Taylor series expansion of the generating function.
 - Plot the graph using NetworkX and Matplotlib, supporting and visualizing multiple edges.
+- Generate a randomized list of edges (graph).
 
 ## Character Encoding
 
@@ -24,7 +25,7 @@ Example of a character that relies on UTF-8:
 
 ## Requirements
 
-- Python 3.6+
+- Python 3.6+ (tested on Python 3.10)
 - NumPy
 - SymPy
 - NetworkX
@@ -59,21 +60,29 @@ Example of a character that relies on UTF-8:
 import numpy as np
 from graph_walk import GraphWalk
 
-# Example usage with an edge list:
-graph_edges = [(1, 2), (2, 3), (3, 1), (1, 4), (2, 4), (2, 3)] #undirected connected graph
-gw_edge = GraphWalk(graph=graph_edges)
-gw_edge.compute_n_step_walk(2)
-gw_edge.compute_generating_function(1, 1)
-gw_edge.taylor_s(graph_walk_edges.poly_ratio)
-gw_edge.plot_graph() #networkx plot
+    # Example 1: usage with a graph, represented by list of edges
+    # Good Will Hunting, question 1
+    graph = [(1, 4), (1, 2), (2, 3), (2, 3), (2, 4)]
+    gw = GraphWalk(graph)
 
-# Example usage with an adjacency matrix:
-adj_matrix = np.array([[0, 1, 1, 1], [1, 0, 2, 1], [1, 2, 0, 0], [1, 1, 0, 0]])
-gw_mat = GraphWalk(adj_mat=adj_matrix)
-gw_mat.compute_n_step_walk(2)
-gw_mat.compute_generating_function(1, 1)
-gw_mat.taylor_s(gw_mat.poly_ratio)
-gw_mat.plot_graph() #networkx plot
+    gw.plot_graph("ex1_graph_input.png", show=False)
+    gw.compute_n_step_walk(3)
+    gw.compute_generating_function(1, 3)
+
+    # Example 2: usage with an adjacency matrix
+    adj_mat = [[0, 1, 1], [1, 0, 1], [1, 1, 0]]
+    gw.adj_mat = np.array(adj_mat)
+    gw.plot_graph("ex2_matrix_input.png", show=False)
+    gw.compute_n_step_walk(4)
+    gw.compute_generating_function(2, 3)
+
+    # Example 3: randomizing an undirected graph
+    gw.generate_rnd_graph(11, 6, double_edges=True)
+    gw.plot_graph("ex3_randomized_graph.jpg", show=False)
+    gw.compute_n_step_walk(5)
+    gw.compute_generating_function(3, 6)
+
+```
 
 ## License
-This project is licensed under the MIT License. See the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE.md) file for details.

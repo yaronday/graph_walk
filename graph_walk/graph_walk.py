@@ -4,7 +4,6 @@ from typing import Optional
 import networkx as nx
 from matplotlib import pyplot as plt
 import random
-import re
 
 
 class GraphWalk:
