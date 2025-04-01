@@ -50,5 +50,6 @@ Thumbs.db
 
 debug.py
 
+!examples
 *.png
 *.jpg
