@@ -11,18 +11,6 @@ NumPy, NetworkX, and Matplotlib. It includes functionalities to:
 - Plot the graph using NetworkX and Matplotlib, supporting and visualizing multiple edges.
 - Generate a randomized list of edges (graph).
 
-## Character Encoding
-
-This project uses UTF-8 encoding for all text files, including Python source code and data files. 
-This ensures proper display of Unicode characters, such as mathematical symbols and box-drawing characters (e.g., "─").
-
-**If you encounter issues displaying characters correctly:**
-
-* Ensure your text editor or terminal is set to use UTF-8 encoding.
-* If you're using a terminal, verify that your system's locale settings are configured for UTF-8.
-
-Example of a character that relies on UTF-8:
-
 ## Requirements
 
 - Python 3.6+ (tested on Python 3.10)
@@ -53,6 +41,10 @@ Example of a character that relies on UTF-8:
     ```bash
     pip install -r requirements.txt
     ```
+
+### Character Encoding
+
+This project uses UTF-8 encoding for all text files, including Python source code and data files. 
 
 ## Usage
 
