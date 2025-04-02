@@ -94,10 +94,10 @@ class GraphWalk:
             return None
 
         sign = -1 if (i + j) % 2 else 1
-        nom = self.compute_det_mat_ij(i, j)
+        nom = sign * self.compute_det_mat_ij(i, j)
         try:
-            self.poly_ratio = sign * nom / self.det_ch_poly
-            self.poly_ratio = -sp.simplify(-self.poly_ratio)
+            self.poly_ratio = nom / self.det_ch_poly
+            self.poly_ratio = sp.simplify(self.poly_ratio, rational=True)
 
             print(f'The generating function for walks from vertex {i} to {j}:')
             self.poly_ratio_display()
