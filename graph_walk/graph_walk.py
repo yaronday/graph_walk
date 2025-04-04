@@ -31,8 +31,10 @@ class GraphWalk:
 
     @adj_mat.setter
     def adj_mat(self, value):
-        self._adj_mat = value
         if value is not None:
+            self._adj_mat = value
+            if not hasattr(self._adj_mat, 'shape'):
+                self._adj_mat = np.array(self._adj_mat)
             self.adj_mat2ugraph()
             self.compute_char_poly()
 
@@ -42,8 +44,12 @@ class GraphWalk:
 
     @graph.setter
     def graph(self, value):
-        self._graph = value
-        if value is not None:
+        if isinstance(value, np.ndarray) and value.size == 0:  # Check for empty NumPy array
+            self._graph = []
+        elif not value:  # Check for an empty list
+            self._graph = []
+        else:
+            self._graph = value
             self.ugraph2adj_mat()
             self.compute_char_poly()
 
@@ -80,6 +86,8 @@ class GraphWalk:
 
     def compute_generating_function(self, i: int, j: int) -> sp.Expr | None:
         """return the generating function for walks from vertex i to vertex j"""
+        self.poly_ratio = None
+
         n = len(self.adj_mat)
         if max(i, j) > n or min(i, j) < 1:
             print(f'Index error!\n'
@@ -122,16 +130,19 @@ class GraphWalk:
         print(f"{bs_padding}{nom}{bs_padding}")
         print(f"{'─' * l_den}\n{den}")
 
-    def minor_matrix(self, i: int, j: int) -> sp.Matrix:
+    def minor_matrix(self, i: int, j: int) -> sp.Matrix | None:
         """Compute the minor matrix A_ij by removing the i-th row
            and j-th column from matrix A. Indexing is 1-based.
         """
+        if self.ch_poly_matrix is None:
+            return None
+
         rows = list(range(self.ch_poly_matrix.shape[0]))
         cols = list(range(self.ch_poly_matrix.shape[1]))
 
         if min(i, j) < 1:
-            print(f'Indexing is 1-based and min(i, j) < 1 => skipping op!\n')
-            return self.ch_poly_matrix
+            print(f'Error! min(i, j) < 1 => skipping op!\n')
+            return None
 
         i -= 1
         j -= 1
@@ -234,7 +245,7 @@ class GraphWalk:
         """
         if num_nodes <= 0:
             self.graph = []
-            return
+            return None
 
         assert num_edges >= num_nodes - 1, f"Error! num_edges must be >= {num_nodes - 1} for connectivity"
 
