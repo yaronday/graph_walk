@@ -33,16 +33,14 @@ class GraphWalk:
 
     @property
     def adj_mat(self) -> NDArray[Any] | None:
-        return self._adj_mat
+        return self._adj_mat  # Expose internal value safely
 
     @adj_mat.setter
-    def adj_mat(self, value: NDArray[Any] | list[list[int]]) -> None:
+    def adj_mat(self, value: NDArray[Any] | None) -> None:
         if value is not None:
             self._adj_mat = (
                 np.array(value) if not isinstance(value, np.ndarray) else value
             )
-            if not hasattr(self._adj_mat, 'shape'):
-                self._adj_mat = np.array(self._adj_mat)
             self.adj_mat2ugraph()
             self.compute_char_poly()
 
@@ -109,8 +107,8 @@ class GraphWalk:
         """return the generating function for walks from vertex i to vertex j"""
         self.poly_ratio = None
         if self.adj_mat is None:
-            return
-        n: int = len(self.adj_mat)
+            return None
+        n = len(self.adj_mat)
         if max(i, j) > n or min(i, j) < 1:
             print(
                 f'Index error!\n'
@@ -125,15 +123,21 @@ class GraphWalk:
             print('Characteristic polynomial error!')
             return None
 
-        sign = -1 if (i + j) % 2 else 1
+        sign = sp.Integer(-1) if (i + j) % 2 else sp.Integer(1)
         nom = sign * self.compute_det_mat_ij(i, j)
+
         try:
             self.poly_ratio = nom / self.det_ch_poly
             self.poly_ratio = sp.simplify(self.poly_ratio, rational=True)
 
+            if not isinstance(self.poly_ratio, sp.Expr):
+                raise TypeError('Generated polynomial ratio is not a valid expression')
+
             print(f'The generating function for walks from vertex {i} to {j}:')
             self.poly_ratio_display()
             self.taylor_s(self.poly_ratio)
+            return self.poly_ratio
+
         except (ValueError, TypeError) as e:
             print(f'Error computing generating function: {e}')
             return None
@@ -211,7 +215,12 @@ class GraphWalk:
         Returns:
             The matrix raised to the nth power.
         """
-        eigenvalues, p = np.linalg.eigh(self.adj_mat)
+        if self._adj_mat is None:
+            raise ValueError(
+                'Adjacency matrix must be set before computing matrix power'
+            )
+
+        eigenvalues, p = np.linalg.eigh(self._adj_mat)
         d_n = np.diag(eigenvalues**n)
         return p @ d_n @ p.T
 
