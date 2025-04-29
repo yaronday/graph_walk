@@ -1,8 +1,10 @@
 import sympy as sp
 import numpy as np
 import networkx as nx
-from matplotlib import pyplot as plt
 import random
+from matplotlib import pyplot as plt
+from numpy.typing import NDArray
+from typing import Any
 
 
 class GraphWalk:
@@ -14,7 +16,7 @@ class GraphWalk:
         adj_mat: list[list[int]] | None = None,
     ):
         self.expansion_var = sp.symbols('z')
-        self._adj_mat = None
+        self._adj_mat: NDArray[Any] | None = None
         self._graph = None
 
         if graph is not None:
@@ -22,20 +24,23 @@ class GraphWalk:
         elif adj_mat is not None:
             self.adj_mat = np.array(adj_mat)
 
-        self.det_ch_poly = None
-        self.poly_ratio = None
-        self.ch_poly_matrix = None
+        self.det_ch_poly: sp.Expr | None = None
+        self.poly_ratio: sp.Expr | None = None
+        self.ch_poly_matrix: sp.Matrix | None = None
+        self.sp_mat: sp.Matrix | None = None
         if self._adj_mat is not None:
             self.sp_mat = sp.Matrix(self._adj_mat)
 
     @property
-    def adj_mat(self):
+    def adj_mat(self) -> NDArray[Any] | None:
         return self._adj_mat
 
     @adj_mat.setter
-    def adj_mat(self, value):
+    def adj_mat(self, value: NDArray[Any] | list[list[int]]) -> None:
         if value is not None:
-            self._adj_mat = value
+            self._adj_mat = (
+                np.array(value) if not isinstance(value, np.ndarray) else value
+            )
             if not hasattr(self._adj_mat, 'shape'):
                 self._adj_mat = np.array(self._adj_mat)
             self.adj_mat2ugraph()
@@ -62,6 +67,8 @@ class GraphWalk:
         """Converts an undirected graph represented as a
         list of edges (1-based) to an adjacency matrix (1-based)."""
         vertices = set()
+        if not self._graph:
+            return
         for u, v in self._graph:
             vertices.add(u)
             vertices.add(v)
@@ -76,6 +83,7 @@ class GraphWalk:
     def adj_mat2ugraph(self) -> None:
         """Converts an adjacency matrix (1-based) to an undirected graph
         represented as a list of edges."""
+
         num_vertices = self._adj_mat.shape[0]
         edges = [
             (i + 1, j + 1)
@@ -97,7 +105,7 @@ class GraphWalk:
         """return the generating function for walks from vertex i to vertex j"""
         self.poly_ratio = None
 
-        n = len(self.adj_mat)
+        n: int = len(self.adj_mat)
         if max(i, j) > n or min(i, j) < 1:
             print(
                 f'Index error!\n'
