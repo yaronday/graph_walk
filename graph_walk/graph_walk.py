@@ -67,8 +67,10 @@ class GraphWalk:
         """Converts an undirected graph represented as a
         list of edges (1-based) to an adjacency matrix (1-based)."""
         vertices = set()
-        if not self._graph:
+        if self._graph is None or len(self._graph) == 0:
+            self._adj_mat = np.array([])
             return
+
         for u, v in self._graph:
             vertices.add(u)
             vertices.add(v)
@@ -83,6 +85,8 @@ class GraphWalk:
     def adj_mat2ugraph(self) -> None:
         """Converts an adjacency matrix (1-based) to an undirected graph
         represented as a list of edges."""
+        if self._adj_mat is None:
+            return
 
         num_vertices = self._adj_mat.shape[0]
         edges = [
@@ -104,7 +108,8 @@ class GraphWalk:
     def compute_generating_function(self, i: int, j: int) -> sp.Expr | None:
         """return the generating function for walks from vertex i to vertex j"""
         self.poly_ratio = None
-
+        if self.adj_mat is None:
+            return
         n: int = len(self.adj_mat)
         if max(i, j) > n or min(i, j) < 1:
             print(
@@ -210,7 +215,7 @@ class GraphWalk:
         d_n = np.diag(eigenvalues**n)
         return p @ d_n @ p.T
 
-    def taylor_s(self, poly: sp.Expr, order: int = 9) -> sp.Poly | sp.Expr | None:
+    def taylor_s(self, poly: sp.Expr, order: int = 9) -> sp.Expr | None:
         """Computes the Taylor series around z=0 for polynomial P(z)"""
         try:
             tseries = sp.series(poly, self.expansion_var, 0, order + 1, '-')
@@ -238,6 +243,10 @@ class GraphWalk:
         visualizing multiple edges with curvature."""
 
         p_graph = nx.MultiGraph()
+
+        if self.graph is None:
+            return
+
         for u, v in self.graph:
             p_graph.add_edge(u, v)
 
