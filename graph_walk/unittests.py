@@ -6,7 +6,6 @@ import os
 
 
 class TestGraphWalk(unittest.TestCase):
-
     def setUp(self):
         self.graph1 = [(1, 2), (1, 3), (2, 3)]
         self.adj_mat1 = [[0, 1, 1], [1, 0, 1], [1, 1, 0]]
@@ -78,7 +77,7 @@ class TestGraphWalk(unittest.TestCase):
         graph_walk = GraphWalk(adj_mat=self.adj_mat1)
         graph_walk.compute_char_poly()
         det_mat_ij = graph_walk.compute_det_mat_ij(1, 1)
-        expected_det = 1 - self.ind_var ** 2
+        expected_det = 1 - self.ind_var**2
         self.assertEqual(det_mat_ij, expected_det)
 
     def test_compute_char_poly(self):
@@ -87,13 +86,13 @@ class TestGraphWalk(unittest.TestCase):
         print(f'ch poly = {graph_walk.ch_poly_matrix}')
         print(f'det = {graph_walk.det_ch_poly}')
 
-        expected_det = -2 * self.ind_var ** 3 - 3 * self.ind_var ** 2 + 1
+        expected_det = -2 * self.ind_var**3 - 3 * self.ind_var**2 + 1
         self.assertEqual(graph_walk.det_ch_poly, expected_det)
 
     def test_sym_matrix_pow(self):
         graph_walk = GraphWalk(adj_mat=self.adj_mat1)
         pow_mat = graph_walk.sym_matrix_pow(2)
-        expected_pow = np.array([[2., 1., 1.], [1., 2., 1.], [1., 1., 2.]])
+        expected_pow = np.array([[2.0, 1.0, 1.0], [1.0, 2.0, 1.0], [1.0, 1.0, 2.0]])
         np.testing.assert_array_almost_equal(pow_mat, expected_pow)
 
     def test_taylor_s(self):
@@ -104,7 +103,7 @@ class TestGraphWalk(unittest.TestCase):
 
     def test_plot_graph(self):
         graph_walk = GraphWalk(graph=self.graph1)
-        filename = "test_graph.png"
+        filename = 'test_graph.png'
         graph_walk.plot_graph(filename=filename, show=False, save=True)
         self.assertTrue(os.path.exists(filename))
         os.remove(filename)

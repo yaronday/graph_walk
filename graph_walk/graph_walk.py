@@ -1,6 +1,5 @@
 import sympy as sp
 import numpy as np
-from typing import Optional
 import networkx as nx
 from matplotlib import pyplot as plt
 import random
@@ -8,8 +7,12 @@ import random
 
 class GraphWalk:
     """analysis of walks on undirected graph"""
-    def __init__(self, graph: Optional[list[tuple[int, int]]] = None,
-                 adj_mat: Optional[list[list[int]]] = None):
+
+    def __init__(
+        self,
+        graph: list[tuple[int, int]] | None = None,
+        adj_mat: list[list[int]] | None = None,
+    ):
         self.expansion_var = sp.symbols('z')
         self._adj_mat = None
         self._graph = None
@@ -44,7 +47,9 @@ class GraphWalk:
 
     @graph.setter
     def graph(self, value):
-        if isinstance(value, np.ndarray) and value.size == 0:  # Check for empty NumPy array
+        if (
+            isinstance(value, np.ndarray) and value.size == 0
+        ):  # Check for empty NumPy array
             self._graph = []
         elif not value:  # Check for an empty list
             self._graph = []
@@ -70,11 +75,15 @@ class GraphWalk:
 
     def adj_mat2ugraph(self) -> None:
         """Converts an adjacency matrix (1-based) to an undirected graph
-           represented as a list of edges."""
+        represented as a list of edges."""
         num_vertices = self._adj_mat.shape[0]
-        edges = [(i + 1, j + 1) for i in range(num_vertices) for j in
-                 range(i + 1, num_vertices) for _ in
-                 range(self._adj_mat[i, j]) if self._adj_mat[i, j] > 0]
+        edges = [
+            (i + 1, j + 1)
+            for i in range(num_vertices)
+            for j in range(i + 1, num_vertices)
+            for _ in range(self._adj_mat[i, j])
+            if self._adj_mat[i, j] > 0
+        ]
         print(f'The edge list:\n{edges}\n')
         self._graph = edges
 
@@ -90,15 +99,17 @@ class GraphWalk:
 
         n = len(self.adj_mat)
         if max(i, j) > n or min(i, j) < 1:
-            print(f'Index error!\n'
-                  f'The condition: max(i, j) <= {n} '
-                  f'and min(i, j) >= 1 is not satisfied\n')
+            print(
+                f'Index error!\n'
+                f'The condition: max(i, j) <= {n} '
+                f'and min(i, j) >= 1 is not satisfied\n'
+            )
             return None
 
         self.compute_char_poly()
 
         if self.det_ch_poly is None:
-            print("Characteristic polynomial error!")
+            print('Characteristic polynomial error!')
             return None
 
         sign = -1 if (i + j) % 2 else 1
@@ -117,22 +128,24 @@ class GraphWalk:
     def poly_ratio_display(self) -> None:
         """display polynomial fraction"""
         x = self.expansion_var
-        pr = (str(self.poly_ratio)
-              .replace(f'{x}**', f'{x}^')
-              .replace(f'*{x}', f'{x}')
-              .replace(f'{x}*', f'{x}'))
+        pr = (
+            str(self.poly_ratio)
+            .replace(f'{x}**', f'{x}^')
+            .replace(f'*{x}', f'{x}')
+            .replace(f'{x}*', f'{x}')
+        )
 
         nom, den = pr.split('/')
         den = den.strip('()')
         l_den, l_nom = len(den), len(nom)
         num_spaces = (l_den - l_nom) // 2
         bs_padding = ' ' * num_spaces
-        print(f"{bs_padding}{nom}{bs_padding}")
-        print(f"{'─' * l_den}\n{den}")
+        print(f'{bs_padding}{nom}{bs_padding}')
+        print(f'{"─" * l_den}\n{den}')
 
     def minor_matrix(self, i: int, j: int) -> sp.Matrix | None:
         """Compute the minor matrix A_ij by removing the i-th row
-           and j-th column from matrix A. Indexing is 1-based.
+        and j-th column from matrix A. Indexing is 1-based.
         """
         if self.ch_poly_matrix is None:
             return None
@@ -141,7 +154,7 @@ class GraphWalk:
         cols = list(range(self.ch_poly_matrix.shape[1]))
 
         if min(i, j) < 1:
-            print(f'Error! min(i, j) < 1 => skipping op!\n')
+            print(f'Error! min(i, j) = {min(i, j)} < 1 => skipping op!\n')
             return None
 
         i -= 1
@@ -169,7 +182,7 @@ class GraphWalk:
             self.sp_mat = sp.Matrix(self.adj_mat)
             n = len(self.adj_mat)
         else:
-            print("Adjacency matrix must be updated first")
+            print('Adjacency matrix must be updated first')
             return
 
         eye = sp.eye(n)
@@ -178,18 +191,18 @@ class GraphWalk:
 
     def sym_matrix_pow(self, n: int) -> np.ndarray:
         """Computes a symmetrical matrix raised to the nth power based on P * D^n * P.T
-           The adjacency matrix of every undirected graph is symmetrical, and for its
-           eigenvector matrix P, the equality P.T = P^-1 always exists.
-           Args:
-               n: The power to which the matrix should be raised.
-           Returns:
-               The matrix raised to the nth power.
+        The adjacency matrix of every undirected graph is symmetrical, and for its
+        eigenvector matrix P, the equality P.T = P^-1 always exists.
+        Args:
+            n: The power to which the matrix should be raised.
+        Returns:
+            The matrix raised to the nth power.
         """
         eigenvalues, p = np.linalg.eigh(self.adj_mat)
-        d_n = np.diag(eigenvalues ** n)
+        d_n = np.diag(eigenvalues**n)
         return p @ d_n @ p.T
 
-    def taylor_s(self, poly: sp.Expr, order: int = 9) -> Optional[sp.Poly] | sp.Expr:
+    def taylor_s(self, poly: sp.Expr, order: int = 9) -> sp.Poly | sp.Expr | None:
         """Computes the Taylor series around z=0 for polynomial P(z)"""
         try:
             tseries = sp.series(poly, self.expansion_var, 0, order + 1, '-')
@@ -200,15 +213,21 @@ class GraphWalk:
             return None
 
     def taylor_s_display(self, taylor_series: sp.Expr) -> None:
-        tseries_formatted = (str(taylor_series).
-                             replace("**", "^").
-                             replace(f"*{self.expansion_var}", f"{self.expansion_var}"))
+        tseries_formatted = (
+            str(taylor_series)
+            .replace('**', '^')
+            .replace(f'*{self.expansion_var}', f'{self.expansion_var}')
+        )
         print(f'\nTaylor expansion:\n{tseries_formatted}\n')
 
-    def plot_graph(self, filename: str = "graph_examples/graph_networkx.png",
-                   show: bool = True, save: bool = True) -> None:
+    def plot_graph(
+        self,
+        filename: str = 'graph_examples/graph_networkx.png',
+        show: bool = True,
+        save: bool = True,
+    ) -> None:
         """Plots the graph using NetworkX MultiGraph and Matplotlib,
-           visualizing multiple edges with curvature."""
+        visualizing multiple edges with curvature."""
 
         p_graph = nx.MultiGraph()
         for u, v in self.graph:
@@ -226,8 +245,13 @@ class GraphWalk:
             else:
                 curvature = 0
 
-            nx.draw_networkx_edges(p_graph, pos, edgelist=[(u, v)], edge_color='gray',
-                                   connectionstyle=f'arc3,rad={curvature}')
+            nx.draw_networkx_edges(
+                p_graph,
+                pos,
+                edgelist=[(u, v)],
+                edge_color='gray',
+                connectionstyle=f'arc3,rad={curvature}',
+            )
         if save:
             plt.savefig(filename)
         if show:
@@ -235,8 +259,9 @@ class GraphWalk:
 
         plt.close()
 
-    def generate_rnd_graph(self, num_edges: int, num_nodes: int,
-                           double_edges: bool = False) -> None:
+    def generate_rnd_graph(
+        self, num_edges: int, num_nodes: int, double_edges: bool = False
+    ) -> None:
         """Generates a random connected undirected graph with performance optimizations.
         :param num_edges: Number of edges to generate.
         :param num_nodes: Number of nodes in the graph (1-based indexing).
@@ -247,11 +272,13 @@ class GraphWalk:
             self.graph = []
             return None
 
-        assert num_edges >= num_nodes - 1, f"Error! num_edges must be >= {num_nodes - 1} for connectivity"
+        assert num_edges >= num_nodes - 1, (
+            f'Error! num_edges must be >= {num_nodes - 1} for connectivity'
+        )
 
         if not double_edges:
             max_edges = num_nodes * (num_nodes - 1) // 2
-            assert num_edges <= max_edges, f"Error! num_edges must be <= {max_edges}"
+            assert num_edges <= max_edges, f'Error! num_edges must be <= {max_edges}'
             edges = set()
         else:
             edges = []
@@ -281,7 +308,7 @@ class GraphWalk:
                             edges.add(edge)
 
         self.graph = list(edges)
-        print(f"Randomized connected graph:\n{sorted(self.graph)}\n")
+        print(f'Randomized connected graph:\n{sorted(self.graph)}\n')
 
     @staticmethod
     def _generate_spanning_tree(num_nodes: int) -> set:
@@ -292,5 +319,3 @@ class GraphWalk:
         for i in range(num_nodes - 1):
             spanning_tree.add(tuple(sorted((nodes[i], nodes[i + 1]))))
         return spanning_tree
-
-

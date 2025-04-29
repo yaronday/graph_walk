@@ -13,7 +13,7 @@ NumPy, NetworkX, and Matplotlib. It includes functionalities to:
 
 ## Requirements
 
-- Python 3.6+ (tested on Python 3.10)
+- Python 3.10+
 - NumPy
 - SymPy
 - NetworkX
