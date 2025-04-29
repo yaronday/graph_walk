@@ -1,5 +1,9 @@
 import numpy as np
-from graph_walk import GraphWalk
+
+# project_root = Path(__file__).parent.parent
+# print(project_root)
+# sys.path.append(str(project_root))
+from src.graph_walk import GraphWalk
 
 
 def run():

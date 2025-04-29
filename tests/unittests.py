@@ -1,7 +1,7 @@
 import unittest
 import sympy as sp
 import numpy as np
-from graph_walk import GraphWalk
+from src.graph_walk import GraphWalk
 import os
 
 

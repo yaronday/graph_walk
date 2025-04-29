@@ -4,7 +4,7 @@ import networkx as nx
 import random
 from matplotlib import pyplot as plt
 from numpy.typing import NDArray
-from typing import Any
+from typing import Any, cast
 
 
 class GraphWalk:
@@ -288,52 +288,58 @@ class GraphWalk:
     def generate_rnd_graph(
         self, num_edges: int, num_nodes: int, double_edges: bool = False
     ) -> None:
-        """Generates a random connected undirected graph with performance optimizations.
-        :param num_edges: Number of edges to generate.
-        :param num_nodes: Number of nodes in the graph (1-based indexing).
-        :param double_edges: If False, prevents duplicate edges.
-        :return: A list of tuples representing the edges.
-        """
+        """Generates a random connected undirected graph."""
         if num_nodes <= 0:
             self.graph = []
-            return None
+            return
 
         assert num_edges >= num_nodes - 1, (
             f'Error! num_edges must be >= {num_nodes - 1} for connectivity'
         )
 
-        if not double_edges:
-            max_edges = num_nodes * (num_nodes - 1) // 2
-            assert num_edges <= max_edges, f'Error! num_edges must be <= {max_edges}'
-            edges = set()
-        else:
-            edges = []
-
-        # ensure connectivity of all nodes
-        spanning_tree_edges = self._generate_spanning_tree(num_nodes)
+        # Initialize edges with proper type handling
+        edges: list[tuple[int, int]] | set[tuple[int, int]] | None
         if double_edges:
-            edges.extend(spanning_tree_edges)
+            edges = []
+            max_edges = num_nodes * (num_nodes - 1)  # No division for double edges
         else:
-            edges.update(spanning_tree_edges)
+            edges = set()
+            max_edges = num_nodes * (num_nodes - 1) // 2
 
-        remaining_edges = num_edges - len(edges)
+        assert num_edges <= max_edges, f'Error! num_edges must be <= {max_edges}'
+
+        # Add spanning tree (ensures connectivity)
+        spanning_tree_edges = self._generate_spanning_tree(num_nodes)
+
+        # Type-narrowed operations
+        if double_edges:
+            # Safe to use list operations
+            edges_list = cast(list[tuple[int, int]], edges)
+            edges_list.extend(spanning_tree_edges)
+        else:
+            # Safe to use set operations
+            edges_set = cast(set[tuple[int, int]], edges)
+            edges_set.update(spanning_tree_edges)
+
+        # Add remaining edges
+        remaining_edges = num_edges - len(spanning_tree_edges)
         if remaining_edges > 0:
-            nodes_list = list(range(1, num_nodes + 1))
+            nodes = list(range(1, num_nodes + 1))
             if double_edges:
+                edges_list = cast(list[tuple[int, int]], edges)
                 for _ in range(remaining_edges):
-                    u, v = random.choice(nodes_list), random.choice(nodes_list)
+                    u, v = random.choice(nodes), random.choice(nodes)
                     while u == v:
-                        u, v = random.choice(nodes_list), random.choice(nodes_list)
-                    edges.append(tuple(sorted((u, v))))
+                        u, v = random.choice(nodes), random.choice(nodes)
+                    edges_list.append((u, v))
             else:
-                while len(edges) < num_edges:
-                    u, v = random.choice(nodes_list), random.choice(nodes_list)
+                edges_set = cast(set[tuple[int, int]], edges)
+                while len(edges_set) < num_edges:
+                    u, v = random.choice(nodes), random.choice(nodes)
                     if u != v:
-                        edge = tuple(sorted((u, v)))
-                        if edge not in edges:
-                            edges.add(edge)
+                        edges_set.add((u, v))
 
-        self.graph = list(edges)
+        self.graph = list(edges)  # Convert to list for final storage
         print(f'Randomized connected graph:\n{sorted(self.graph)}\n')
 
     @staticmethod
