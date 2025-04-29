@@ -23,6 +23,7 @@ repos:
         entry: bash ~/my-hooks/run_ruff-format.sh
         language: system
         files: \.py$
+
       - id: pyright
         name: pyright (local)
         entry: bash ~/my-hooks/run_pyright.sh
