@@ -37,7 +37,7 @@ class GraphWalk:
 
     @property
     def adj_mat(self) -> NDArray[Any] | None:
-        return self._adj_mat  # Expose internal value safely
+        return self._adj_mat
 
     @adj_mat.setter
     def adj_mat(self, value: NDArray[Any] | None) -> None:
