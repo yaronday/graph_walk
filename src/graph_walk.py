@@ -31,6 +31,10 @@ class GraphWalk:
         if self._adj_mat is not None:
             self.sp_mat = sp.Matrix(self._adj_mat)
 
+    @staticmethod
+    def _is_empty_ndarray(value) -> bool:
+        return isinstance(value, np.ndarray) and value.size == 0
+
     @property
     def adj_mat(self) -> NDArray[Any] | None:
         return self._adj_mat  # Expose internal value safely
@@ -39,7 +43,7 @@ class GraphWalk:
     def adj_mat(self, value: NDArray[Any] | None) -> None:
         if value is not None:
             self._adj_mat = (
-                np.array(value) if not isinstance(value, np.ndarray) else value
+                np.array(value) if not self._is_empty_ndarray(value) else value
             )
             self.adj_mat2ugraph()
             self.compute_char_poly()
@@ -50,11 +54,9 @@ class GraphWalk:
 
     @graph.setter
     def graph(self, value):
-        if (
-            isinstance(value, np.ndarray) and value.size == 0
-        ):  # Check for empty NumPy array
+        if self._is_empty_ndarray(value):
             self._graph = []
-        elif not value:  # Check for an empty list
+        elif not value:
             self._graph = []
         else:
             self._graph = value
@@ -64,14 +66,11 @@ class GraphWalk:
     def ugraph2adj_mat(self) -> None:
         """Converts an undirected graph represented as a
         list of edges (1-based) to an adjacency matrix (1-based)."""
-        vertices = set()
         if self._graph is None or len(self._graph) == 0:
             self._adj_mat = np.array([])
             return
 
-        for u, v in self._graph:
-            vertices.add(u)
-            vertices.add(v)
+        vertices = {u for edge in self._graph for u in edge}
         num_vertices = max(vertices)
         adj_matrix = np.zeros((num_vertices, num_vertices), dtype=int)
         for u, v in self._graph:
