@@ -2,6 +2,7 @@ import sympy as sp
 import numpy as np
 import networkx as nx
 import random
+import re
 from matplotlib import pyplot as plt
 from numpy.typing import NDArray
 from typing import Any, cast
@@ -142,21 +143,18 @@ class GraphWalk:
             return None
 
     def poly_ratio_display(self) -> None:
-        """display polynomial fraction"""
+        """Display polynomial fraction with proper formatting and superscript exponents."""
         x = self.expansion_var
-        pr = (
-            str(self.poly_ratio)
-            .replace(f'{x}**', f'{x}^')
-            .replace(f'*{x}', f'{x}')
-            .replace(f'{x}*', f'{x}')
-        )
-
-        nom, den = pr.split('/')
+        num, den = str(self.poly_ratio).split('/')
         den = den.strip('()')
-        l_den, l_nom = len(den), len(nom)
-        num_spaces = (l_den - l_nom) // 2
+        num = self._superscript_exponents(num)
+        den = self._superscript_exponents(den)
+        num = num.replace(f'*{x}', f'{x}').replace(f'{x}*', f'{x}')
+        den = den.replace(f'*{x}', f'{x}').replace(f'{x}*', f'{x}')
+        l_den, l_num = len(den), len(num)
+        num_spaces = (l_den - l_num) // 2
         bs_padding = ' ' * num_spaces
-        print(f'{bs_padding}{nom}{bs_padding}')
+        print(f'{bs_padding}{num}{bs_padding}')
         print(f'{"─" * l_den}\n{den}')
 
     def minor_matrix(self, i: int, j: int) -> sp.Matrix | None:
@@ -234,10 +232,10 @@ class GraphWalk:
             return None
 
     def taylor_s_display(self, taylor_series: sp.Expr) -> None:
-        tseries_formatted = (
-            str(taylor_series)
-            .replace('**', '^')
-            .replace(f'*{self.expansion_var}', f'{self.expansion_var}')
+        """Display taylor series with proper formatting and superscript exponents."""
+        tseries_formatted = self._superscript_exponents(str(taylor_series))
+        tseries_formatted = tseries_formatted.replace(
+            f'*{self.expansion_var}', f'{self.expansion_var}'
         )
         print(f'\nTaylor expansion:\n{tseries_formatted}\n')
 
@@ -350,3 +348,18 @@ class GraphWalk:
         for i in range(num_nodes - 1):
             spanning_tree.add(tuple(sorted((nodes[i], nodes[i + 1]))))
         return spanning_tree
+
+    @staticmethod
+    def _superscript_exponents(s: str) -> str:
+        """Helper function to replace **exponents with Unicode superscripts."""
+        superscript_map = str.maketrans('0123456789-', '⁰¹²³⁴⁵⁶⁷⁸⁹⁻')
+        parts = []
+        last_end = 0
+        # Find all ** followed by digits or negative numbers
+        for match in re.finditer(r'\*\*([-+]?\d+)', s):
+            parts.append(s[last_end : match.start()])
+            exponent = match.group(1)
+            parts.append(exponent.translate(superscript_map))
+            last_end = match.end()
+        parts.append(s[last_end:])
+        return ''.join(parts)
